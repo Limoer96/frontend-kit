@@ -36,7 +36,7 @@ function getConstName(value) {
 
 function beforeGenerate(basePath) {
   const startTime = Date.now()
-  const config = global.MODULE_CONFIG
+  const config = (global as any).MODULE_CONFIG
   if (!fs.existsSync(path.resolve(basePath))) {
     console.log(chalk.yellow(`Stopped. Can not find path: ${basePath}`))
     return
@@ -82,7 +82,7 @@ export default {
 
 function getModuleIndexPage(pages) {
   let importStr = ''
-  const pageModuleList = []
+  const pageModuleList: any[] = []
   for (const page of pages) {
     const pageModuleName = getPascalCaseName(page)
     importStr += `import ${pageModuleName} from './${page}'\n`
@@ -95,7 +95,7 @@ export default { ${pageModuleList.join(', ')} }
 
 function getModelIndexPage(pages) {
   let importStr = ''
-  const pageModuleList = []
+  const pageModuleList: any[] = []
   for (const page of pages) {
     const pageModuleName = getPascalCaseName(page)
     importStr += `import ${pageModuleName} from './${page}'\n`
@@ -107,7 +107,7 @@ export default [${pageModuleList.join(', ')}]
 }
 
 function generatePage() {
-  const config = global.MODULE_CONFIG
+  const config = (global as any).MODULE_CONFIG
   const pagePath = './src/pages' || config.pagePath
   const basePath = path.resolve(__dirname, pagePath)
   const modulePath = path.join(basePath, config.name) // 模块页
@@ -140,7 +140,7 @@ function generatePage() {
 }
 
 function generateModels() {
-  const config = global.MODULE_CONFIG
+  const config = (global as any).MODULE_CONFIG
   const modelPath = './src/models' || config.modelPath
   const basePath = path.resolve(__dirname, modelPath) // 根目录
   const modulePath = path.join(basePath, config.name) // 模块页
@@ -179,7 +179,7 @@ function getRoutePaths(pages) {
 }
 
 function getRouteIndexPage() {
-  const { name, pages } = global.MODULE_CONFIG
+  const { name, pages } = (global as any).MODULE_CONFIG
   const pageModuleName = getPascalCaseName(name)
   const pathNameList = pages.map((page) => getConstName(page))
   const routeList = pages.map((page) => {
@@ -210,7 +210,7 @@ function logGenerateFile(filePath) {
 }
 // checked!
 function generateRoutes() {
-  const config = global.MODULE_CONFIG
+  const config = (global as any).MODULE_CONFIG
   const routePath = './src/router/config' || config.routePath
   const basePath = path.resolve(process.cwd(), routePath) // absolute path at config
   const modulePath = path.join(basePath, config.name)
@@ -261,7 +261,7 @@ function genInitialConfig() {
 function run() {
   fsp.readFile(CONFIG_PATH, 'utf-8').then((file) => {
     const config = JSON.parse(file)
-    global.MODULE_CONFIG = config
+    ;(global as any).MODULE_CONFIG = config
     generatePage()
     generateModels()
     generateRoutes()
