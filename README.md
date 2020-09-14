@@ -79,3 +79,7 @@ import useToggleState from 'wbd-frontend-kit/dist/hooks/useToggleState'
 const [state, toggleState] = useToggleState(false)
 toggleState()
 ```
+
+### 工具函数
+
+> 见 `dist/utils`
