@@ -83,3 +83,21 @@ toggleState()
 ### 工具函数
 
 > 见 `dist/utils`
+
+### 脚本
+
+> 本项目包含的所有脚本均可以通过`wbd-scripts [command] [<params>]`的方式运行，全局安装`yarn global add wbd-frontend-kit`后直接使用该命令或本地安装后在`package.json`中的`scripts`对象中添加`{"commandxx": "wbd-scripts"}`，然后使用通过`yarn commandxx commandName`的运行脚本。
+
+```bash
+Usage: wbd-scripts [command] [<params>]
+
+  [command]
+    将要运行的命令名称，例如 wbd-scripts module
+  <params>
+    该命令需要的参数（可选），例如：wbd-scripts init ts dva 表示初始化时使用ts和dva
+```
+
+> 支持的命令
+
+1. module
+   使用该命令创建一个新的模块，该模块包含了`pages/routes/models`三个部分。第一次运行命令会生成配置文件模板，修改模板后第二次运行本命令可生成一个新的模块。注：该命令生成的模块只适用于`b2b`模板的项目。

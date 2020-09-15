@@ -34,7 +34,7 @@ function getConstName(value) {
     .join('_')
 }
 
-function beforeGenerate(basePath) {
+function beforeGenerate(basePath: string, type: string) {
   const startTime = Date.now()
   const config = (global as any).MODULE_CONFIG
   if (!fs.existsSync(path.resolve(basePath))) {
@@ -51,7 +51,7 @@ function beforeGenerate(basePath) {
   }
   return () => {
     const timeSpend = Date.now() - startTime
-    console.log(`Module generation is completed, it takes ${timeSpend}ms`)
+    console.log(`${type} generation is completed, it takes ${timeSpend}ms`)
   }
 }
 
@@ -108,10 +108,10 @@ export default [${pageModuleList.join(', ')}]
 
 function generatePage() {
   const config = (global as any).MODULE_CONFIG
-  const pagePath = './src/pages' || config.pagePath
-  const basePath = path.resolve(__dirname, pagePath)
+  const pagePath = config.pagePath || './src/pages'
+  const basePath = path.resolve(process.cwd(), pagePath) // 基本目录的绝对路径
   const modulePath = path.join(basePath, config.name) // 模块页
-  const afterGenerate = beforeGenerate(basePath)
+  const afterGenerate = beforeGenerate(basePath, 'page')
   if (!afterGenerate) {
     return
   }
@@ -141,10 +141,10 @@ function generatePage() {
 
 function generateModels() {
   const config = (global as any).MODULE_CONFIG
-  const modelPath = './src/models' || config.modelPath
-  const basePath = path.resolve(__dirname, modelPath) // 根目录
+  const modelPath = config.modelPath || './src/models'
+  const basePath = path.resolve(process.cwd(), modelPath) // 根目录
   const modulePath = path.join(basePath, config.name) // 模块页
-  const afterGenerate = beforeGenerate(basePath) // 创建modulePath并计时
+  const afterGenerate = beforeGenerate(basePath, 'model') // 创建modulePath并计时
   if (!afterGenerate) {
     return
   }
@@ -211,10 +211,10 @@ function logGenerateFile(filePath) {
 // checked!
 function generateRoutes() {
   const config = (global as any).MODULE_CONFIG
-  const routePath = './src/router/config' || config.routePath
+  const routePath = config.routePath || './src/router/config'
   const basePath = path.resolve(process.cwd(), routePath) // absolute path at config
   const modulePath = path.join(basePath, config.name)
-  const afterGenerate = beforeGenerate(basePath)
+  const afterGenerate = beforeGenerate(basePath, 'route')
   if (!afterGenerate) {
     return
   }
@@ -268,8 +268,8 @@ function run() {
   })
 }
 
-function getNodejsMainVersion(version) {
-  const versions = version.split('.')
+function getNodejsMainVersion(version: string) {
+  const versions = version.substring(1).split('.')
   const mainVersion = Number(versions[0])
   if (Number.isNaN(mainVersion)) {
     return -1
@@ -281,7 +281,7 @@ module.exports = function () {
   // check Node.js version
   const currentNodeVersion = getNodejsMainVersion(process.version)
 
-  if (currentNodeVersion <= 10) {
+  if (currentNodeVersion < 10) {
     console.log(
       chalk.red(
         `Your current Node.js version is ${currentNodeVersion}, genModule does not support Node.js version below 10!`
