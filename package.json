@@ -6,9 +6,13 @@
     "dist/*",
     "client.js"
   ],
+  "main": "lib/index.js",
+  "module": "es/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
+    "build-lib": "tsc",
+    "build-es": "tsc --build tsconfig.es6.json",
+    "build": "yarn build-lib & yarn build-es"
   },
   "bin": {
     "wbd-scripts": "client.js"
