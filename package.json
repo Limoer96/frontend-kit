@@ -3,7 +3,8 @@
   "version": "1.0.4",
   "description": "A set of react development tools for wbd frontend team",
   "files": [
-    "dist/*",
+    "lib/*",
+    "es/*",
     "client.js"
   ],
   "main": "lib/index.js",
