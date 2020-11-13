@@ -92,6 +92,24 @@ const sendData = { Authorization: this.state.Authorization, type: 'all' }
 exportFile('/api/admin/platform/downloadReceiptProfitTemplate.xls', sendData)
 ```
 
+3. `importAll(ctx: __WebpackModuleApi.RequireContext, isArray?: boolean, formatkey?: (key: string) => string)` 批量导出模块
+
+`importAll`函数用于批量导出模块，`ctx`函数为`require.context`的`context`实例，`isArray`表示导出类型是否是数组，`formatKey`表示在导出为对象的情况下，自定义`key`。
+
+> `importAll`函数依赖`require.context`，详情见[require.context](https://webpack.js.org/guides/dependency-management/#requirecontext)的使用。注意：本函数只在使用`Webpack`构建的项目中生效。
+
+例如如果要导出`pages/`目录下所有的`model.ts`，可以是如下的写法：
+
+```js
+import { importAll } from 'wbd-frontend-kit'
+// 1. 导出为对象，使用默认的key生成规则
+export default importAll(require.context('./pages/', true, /.*model\.ts$/))
+// 2. 导出为对象，使用自定义key规则（加上前缀）
+export default importAll(require.context('./pages/', true, /.*model\.ts$/), false, key => `prefix-${key}`)
+// 3. 导出为数组
+export default importAll(require.context('./pages/', true, /.*model\.ts$/), true)
+```
+
 其余工具函数见`es/utils`
 
 ### 脚本
