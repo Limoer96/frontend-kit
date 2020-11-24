@@ -11,12 +11,12 @@
 使用方式：
 
 ```js
-import { message } from 'antd'
-import { messageApi } from 'wbd-frontend-kit'
+import { message } from "antd";
+import { messageApi } from "wbd-frontend-kit";
 
-const singletonMessage = messageApi(message)
+const singletonMessage = messageApi(message);
 
-singletonMessage.success({ content: 'success' })
+singletonMessage.success({ content: "success" });
 ```
 
 ### Definitions
@@ -26,17 +26,17 @@ singletonMessage.success({ content: 'success' })
 使用方式：
 
 ```js
-import { Model } from 'wbd-frontend-kit'
+import { Model } from "wbd-frontend-kit";
 const model: Model = {
   namespace,
   state,
   effects: {
     *xx(_, { call, put }) {
-      yield call(xxx)
+      yield call(xxx);
     },
   },
   reducers: {},
-}
+};
 ```
 
 ### Hooks
@@ -45,34 +45,34 @@ const model: Model = {
    使用方式：
 
 ```js
-import { usePagination, useNoRenderPagination } from 'wbd-frontend-kit'
+import { usePagination, useNoRenderPagination } from "wbd-frontend-kit";
 // handleChange, handleShowSizeChange, reset 会触发组件更新
 const [page, size, handleChange, handleShowSizeChange, reset] = usePagination({
   page: 1,
   size: 10,
-})
+});
 // setPage不会触发组件更新，适用于手动更新的方式
-const [pageOptions, setPage] = useNoRenderPagination({ page: 1, size: 10 })
+const [pageOptions, setPage] = useNoRenderPagination({ page: 1, size: 10 });
 ```
 
 2. useQueryParams 获取查询参数
    使用方式:
 
 ```js
-import { useQueryParam, useQueryParams } from 'wbd-frontend-kit'
+import { useQueryParam, useQueryParams } from "wbd-frontend-kit";
 // 获取单个参数
-const name = useQueryParam(location.search, 'name')
+const name = useQueryParam(location.search, "name");
 // 获取所有参数
-const params = useQueryParams(location.search)
+const params = useQueryParams(location.search);
 ```
 
 3. useToggleState true/false 状态切换
    使用方式:
 
 ```js
-import { useToggleState } from 'wbd-frontend-kit'
-const [state, toggleState] = useToggleState(false)
-toggleState()
+import { useToggleState } from "wbd-frontend-kit";
+const [state, toggleState] = useToggleState(false);
+toggleState();
 ```
 
 ### 工具函数
@@ -80,16 +80,16 @@ toggleState()
 1. `execFunction(func, ...params)`用于执行函数的函数，常用于执行`callback`
 
 ```js
-import { execFunction } from 'wbd-frontend-kit'
-execFunction(func)
+import { execFunction } from "wbd-frontend-kit";
+execFunction(func);
 ```
 
 2. `exportFile(url, params)`下载远程文件
 
 ```js
-import { exportFile } from 'wbd-frontend-kit'
-const sendData = { Authorization: this.state.Authorization, type: 'all' }
-exportFile('/api/admin/platform/downloadReceiptProfitTemplate.xls', sendData)
+import { exportFile } from "wbd-frontend-kit";
+const sendData = { Authorization: this.state.Authorization, type: "all" };
+exportFile("/api/admin/platform/downloadReceiptProfitTemplate.xls", sendData);
 ```
 
 3. `importAll(ctx: __WebpackModuleApi.RequireContext, isArray?: boolean, formatkey?: (key: string) => string)` 批量导出模块
@@ -101,13 +101,20 @@ exportFile('/api/admin/platform/downloadReceiptProfitTemplate.xls', sendData)
 例如如果要导出`pages/`目录下所有的`model.ts`，可以是如下的写法：
 
 ```js
-import { importAll } from 'wbd-frontend-kit'
+import { importAll } from "wbd-frontend-kit";
 // 1. 导出为对象，使用默认的key生成规则
-export default importAll(require.context('./pages/', true, /.*model\.ts$/))
+export default importAll(require.context("./pages/", true, /.*model\.ts$/));
 // 2. 导出为对象，使用自定义key规则（加上前缀）
-export default importAll(require.context('./pages/', true, /.*model\.ts$/), false, key => `prefix-${key}`)
+export default importAll(
+  require.context("./pages/", true, /.*model\.ts$/),
+  false,
+  (key) => `prefix-${key}`
+);
 // 3. 导出为数组
-export default importAll(require.context('./pages/', true, /.*model\.ts$/), true)
+export default importAll(
+  require.context("./pages/", true, /.*model\.ts$/),
+  true
+);
 ```
 
 其余工具函数见`es/utils`
@@ -129,3 +136,4 @@ Usage: wbd-scripts [command] [<params>]
 
 1. module: `yarn wbd-scripts module`
    使用该命令创建一个新的模块，该模块包含了`pages/routes/models`三个部分。第一次运行命令会生成配置文件模板，修改模板后第二次运行本命令可生成一个新的模块。注：该命令生成的模块只适用于`b2b`模板的项目。
+   > 注意：1.0.7 版本后只支持`web-templates`模板，使用`b2b`模板的项目请使用 1.0.6 及以下版本

@@ -1,5 +1,5 @@
 {
-  "name": "frontend-kit",
+  "name": "wbd-frontend-kit",
   "version": "1.0.6",
   "description": "A set of react development tools for wbd frontend team",
   "files": [
@@ -16,7 +16,7 @@
     "build": "yarn build-lib & yarn build-es"
   },
   "bin": {
-    "wbd-scripts-test": "client.js"
+    "wbd-scripts": "client.js"
   },
   "keywords": [
     "react",
