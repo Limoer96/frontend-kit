@@ -1,5 +1,5 @@
 {
-  "name": "wbd-frontend-kit",
+  "name": "frontend-kit",
   "version": "1.0.6",
   "description": "A set of react development tools for wbd frontend team",
   "files": [
@@ -16,7 +16,7 @@
     "build": "yarn build-lib & yarn build-es"
   },
   "bin": {
-    "wbd-scripts": "client.js"
+    "wbd-scripts-test": "client.js"
   },
   "keywords": [
     "react",
@@ -28,14 +28,16 @@
   "author": "limoer",
   "license": "ISC",
   "dependencies": {
+    "@types/webpack-env": "^1.15.3",
     "chalk": "^4.1.0",
     "inquirer": "^7.3.3",
-    "prettier": "^2.1.1",
-    "@types/webpack-env": "^1.15.3"
+    "prettier": "^2.1.1"
   },
   "devDependencies": {
     "@types/history": "^4.7.7",
+    "@types/inquirer": "^7.3.1",
     "@types/node": "^14.10.1",
+    "@types/prettier": "^2.1.5",
     "@types/react": "^16.9.49",
     "@types/redux": "^3.6.0",
     "history": "^5.0.0",

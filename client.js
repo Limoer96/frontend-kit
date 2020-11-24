@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const genModule = require('./dist/scripts/genModule')
+const genModule = require('./lib/scripts/genModule')
 
 const args = process.argv.slice(2)
 
@@ -14,6 +14,7 @@ function execFunction(func, ...params) {
   }
 }
 
-const [commond, ...params] = args
+const [command, ...params] = args
 
-execFunction(ACTION_MAP[commond], ...params)
+execFunction(ACTION_MAP[command], ...params)
+
