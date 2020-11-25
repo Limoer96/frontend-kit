@@ -98,7 +98,7 @@ interface Plugin {
   get: (key: keyof Hooks | '_handleActions') => any
 }
 
-interface DvaInstance {
+export interface DvaInstance {
   _models: Array<Model>
   _store: Store
   _plugin: Plugin
