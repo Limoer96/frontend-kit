@@ -46,10 +46,18 @@ function beforeGenerate(basePath: string, type: string) {
   try {
     fs.mkdirSync(modulePath);
   } catch (error) {
-    console.error(
-      chalk.red(`Failed to create folder: ${modulePath}, error: ${error}`)
-    );
-    return;
+    if (error.code === "EEXIST") {
+      console.log(
+        chalk.yellow(
+          "The directory already exists, the page will be added incrementally."
+        )
+      );
+    } else {
+      console.log(
+        chalk.red(`Failed to create folder: ${modulePath}, error: ${error}`)
+      );
+      return;
+    }
   }
   return () => {
     const timeSpend = Date.now() - startTime;
@@ -99,6 +107,28 @@ export default { ${pageModuleList.join(", ")} }
 `;
 }
 
+function checkPageExistAndGenerate(currentPagePath: string, page: string) {
+  const { name }: IConfig = (global as any).MODULE_CONFIG;
+  const exist = fs.existsSync(currentPagePath);
+  if (exist) {
+    return;
+  }
+  fs.mkdirSync(currentPagePath);
+  logGenerateDir(currentPagePath);
+  // 创建页面模板
+  fs.writeFileSync(
+    path.join(currentPagePath, "index.tsx"),
+    getPageTempate(page)
+  );
+  logGenerateFile(path.join(currentPagePath, "index.tsx"));
+  // 由于不需要单独创建models，因此单独创建model.ts文件
+  fs.writeFileSync(
+    path.join(currentPagePath, "model.ts"),
+    getModelPage(`${name}-${page}`)
+  );
+  logGenerateFile(path.join(currentPagePath, "model.ts"));
+}
+
 function generatePage() {
   const {
     pages,
@@ -122,22 +152,9 @@ function generatePage() {
     // 创建具体页面
     for (const page of pages) {
       const currentPagePath = path.join(modulePath, page); // 创建具体的页面目录
-      fs.mkdirSync(currentPagePath);
-      logGenerateDir(currentPagePath);
-      // 创建页面模板
-      fs.writeFileSync(
-        path.join(currentPagePath, "index.tsx"),
-        getPageTempate(page)
-      );
-      logGenerateFile(path.join(currentPagePath, "index.tsx"));
-      // 由于不需要单独创建models，因此单独创建model.ts文件
-      fs.writeFileSync(
-        path.join(currentPagePath, "model.ts"),
-        getModelPage(`${name}-${page}`)
-      );
-      logGenerateFile(path.join(currentPagePath, "model.ts"));
+      checkPageExistAndGenerate(currentPagePath, page);
     }
-    // 统一导出
+    // 统一导出，无论是新生成还是增量
     fs.writeFileSync(
       path.join(modulePath, "index.ts"),
       getModuleIndexPage(pages)
@@ -201,6 +218,18 @@ function moduleHasPages() {
   const { pages, name }: IConfig = (global as any).MODULE_CONFIG;
   return name && pages && pages.length > 0;
 }
+
+function warnIfModelGenerated(modulePath: string) {
+  const exist = fs.existsSync(modulePath);
+  if (exist) {
+    console.log(
+      chalk.yellow(
+        "This script does not currently support incremental routing configuration.\nPlease modify the routing configuration manually."
+      )
+    );
+  }
+  return exist;
+}
 // checked!
 function generateRoutes() {
   const config: IConfig = (global as any).MODULE_CONFIG;
@@ -211,6 +240,11 @@ function generateRoutes() {
   const pathFileName = path.join(modulePath, "path.ts");
   const afterGenerate = beforeGenerate(basePath, "route");
   if (!afterGenerate) {
+    return;
+  }
+  // 如果是增量式，直接结束
+  if (warnIfModelGenerated(modulePath)) {
+    afterGenerate();
     return;
   }
   // 创建path.ts
@@ -264,8 +298,8 @@ function run() {
   fsp.readFile(CONFIG_PATH, "utf-8").then((_config: string) => {
     const config: IConfig = JSON.parse(_config);
     (global as any).MODULE_CONFIG = config;
+    // todo：支持增量式页面生成
     generatePage();
-    // generateModels();
     generateRoutes();
   });
 }
