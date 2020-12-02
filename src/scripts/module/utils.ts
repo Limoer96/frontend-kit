@@ -21,6 +21,10 @@ export function logGenerateDir(filePath: string) {
   console.log("Create Dir: ", chalk.green(filePath));
 }
 
+export function logModifyFile(filePath: string) {
+  console.log("Modify File:", chalk.yellow(filePath));
+}
+
 export function beforeGenerate(basePath: string, type: string) {
   const startTime = Date.now();
   const config: IConfig = (global as any).MODULE_CONFIG;

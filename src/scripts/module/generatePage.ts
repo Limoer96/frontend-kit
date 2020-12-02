@@ -62,11 +62,28 @@ export default { ${pageModuleList.join(", ")} }
 `;
 }
 
+// 路由配置Dir是否存在
+function isModuleRoutePathExist() {
+  const config: IConfig = (global as any).MODULE_CONFIG;
+  const routePath = config.routePath || "./src/router/config";
+  const basePath = path.resolve(process.cwd(), routePath);
+  const modulePath = path.join(basePath, config.name);
+  return fs.existsSync(modulePath);
+}
+
 function checkPageExistAndGenerate(currentPagePath: string, page: string) {
   const { name }: IConfig = (global as any).MODULE_CONFIG;
   const exist = fs.existsSync(currentPagePath);
   if (exist) {
     return;
+  }
+  if (isModuleRoutePathExist()) {
+    // 把当次新增的页面保存下来
+    const pageNameList: string[] | undefined = (global as any)
+      .extraPageNameList;
+    (global as any).extraPageNameList = pageNameList
+      ? [...pageNameList, page]
+      : [page];
   }
   fs.mkdirSync(currentPagePath);
   logGenerateDir(currentPagePath);

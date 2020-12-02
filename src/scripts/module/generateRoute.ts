@@ -8,40 +8,47 @@ import {
   getConstName,
   getPascalCaseName,
   logGenerateFile,
+  logModifyFile,
 } from "./utils";
-
-function warnIfModelGenerated(modulePath: string) {
-  const exist = fs.existsSync(modulePath);
-  if (exist) {
-    console.log(
-      chalk.yellow(
-        "This script does not currently support incremental routing configuration.\nPlease modify the routing configuration manually."
-      )
-    );
-  }
-  return exist;
-}
 
 function moduleHasPages() {
   const { pages, name }: IConfig = (global as any).MODULE_CONFIG;
   return name && pages && pages.length > 0;
 }
 
-function getRoutePaths() {
+function getRoutePaths(pathFileName: string) {
   const { pages, name }: IConfig = (global as any).MODULE_CONFIG;
+  const extraPageNameList: string[] | undefined = (global as any)
+    .extraPageNameList;
+  // 增量式添加
   const moduleNamePrefix = name.split("-")[0];
-  let result = `export const MODULE_INDEX = '/${moduleNamePrefix}'\n`;
-  for (const page of pages) {
-    const exportName = getConstName(page);
-    result += `export const ${exportName} = '/${moduleNamePrefix}/${page}'\n`;
+  if (extraPageNameList && extraPageNameList.length > 0) {
+    try {
+      let file = fs.readFileSync(pathFileName, { encoding: "utf-8" });
+      for (const page of extraPageNameList) {
+        const exportName = getConstName(page);
+        file += `export const ${exportName} = '/${moduleNamePrefix}/${page}'\n`;
+      }
+      return file;
+    } catch (error) {
+      console.log(
+        chalk.red("Error happend when add extra page in: ", pathFileName)
+      );
+    }
+  } else {
+    let result = `export const MODULE_INDEX = '/${moduleNamePrefix}'\n`;
+    for (const page of pages) {
+      const exportName = getConstName(page);
+      result += `export const ${exportName} = '/${moduleNamePrefix}/${page}'\n`;
+    }
+    return result;
   }
-  return result;
+  return "";
 }
 
-function getRouteIndexPage() {
-  const { name, pages }: IConfig = (global as any).MODULE_CONFIG;
+function getRouteList(pages: string[]) {
+  const { name }: IConfig = (global as any).MODULE_CONFIG;
   const pageModuleName = getPascalCaseName(name);
-  const pathNameList = pages.map((page) => getConstName(page));
   const routeList = pages.map((page) => {
     const path = getConstName(page);
     const componentName = getPascalCaseName(page);
@@ -53,7 +60,35 @@ function getRouteIndexPage() {
 },
 `;
   });
-  return `import { IRouteConfig } from '../../typing'
+  return routeList;
+}
+
+function getRouteIndexPage(pathFileName: string) {
+  const { name, pages }: IConfig = (global as any).MODULE_CONFIG;
+  const extraPageNameList: string[] | undefined = (global as any)
+    .extraPageNameList;
+  // 增量式添加
+  if (extraPageNameList && extraPageNameList.length > 0) {
+    try {
+      let file = fs.readFileSync(pathFileName, { encoding: "utf-8" });
+      // 1. 从path.ts中导入path
+      file = file.replace(
+        " } from './path'",
+        `, ${extraPageNameList
+          .map((page) => getConstName(page))
+          .join(", ")} } from './path'`
+      );
+      // 2. 生成routeList
+      const routeList = getRouteList(extraPageNameList);
+      // 3. 把routeList插入到已有的列表中
+      file = file.replace("routes: [", `routes: [\n${routeList.join("")}`);
+      return file;
+    } catch (error) {}
+  } else {
+    const pageModuleName = getPascalCaseName(name);
+    const pathNameList = pages.map((page) => getConstName(page));
+    const routeList = getRouteList(pages);
+    return `import { IRouteConfig } from '../../typing'
 import Layout from '@/pages/layout'
 import ${pageModuleName} from '@/pages/${name}'
 import { ${pathNameList.join(", ")}, MODULE_INDEX } from './path'
@@ -67,7 +102,34 @@ const route: IRouteConfig = {
 }
 export default route
   `;
+  }
+  return "";
 }
+// 路由配置 模块自动导出
+// 纯字符串的操作方式，可能会存在问题
+function addIndexImport(routePath: string) {
+  const indexFilePath = path.join(routePath, "index.ts");
+  const { name }: IConfig = (global as any).MODULE_CONFIG;
+  const importModuleName = getPascalCaseName(name);
+  let newIndexFileStr = `import ${importModuleName} from './${name}'\n`;
+  try {
+    const file = fs.readFileSync(indexFilePath, { encoding: "utf-8" });
+    // 如果已经导入了，则直接跳过
+    if (file.includes(importModuleName)) {
+      return;
+    }
+    newIndexFileStr += file;
+    newIndexFileStr = newIndexFileStr.replace("]", `, ${importModuleName}]`);
+    fs.writeFileSync(indexFilePath, newIndexFileStr);
+    logModifyFile(indexFilePath);
+  } catch (error) {
+    console.log(
+      chalk.red("Error happend when modify file:", indexFilePath, error)
+    );
+  }
+}
+
+// 思考：如果知道当前新增的page route?
 
 export default function generateRoutes() {
   const config: IConfig = (global as any).MODULE_CONFIG;
@@ -76,11 +138,10 @@ export default function generateRoutes() {
   const modulePath = path.join(basePath, config.name); // module absolute path
   const routeFileName = path.join(modulePath, "index.ts");
   const pathFileName = path.join(modulePath, "path.ts");
-
-  // 如果是增量式，直接结束
-  if (warnIfModelGenerated(modulePath)) {
-    return;
-  }
+  // // 如果是增量式，直接结束
+  // if (warnIfModelGenerated(modulePath)) {
+  //   return;
+  // }
 
   const afterGenerate = beforeGenerate(basePath, "route");
   if (!afterGenerate) {
@@ -88,18 +149,20 @@ export default function generateRoutes() {
   }
   // 创建path.ts
   if (moduleHasPages()) {
-    fs.writeFileSync(pathFileName, getRoutePaths());
+    fs.writeFileSync(pathFileName, getRoutePaths(pathFileName));
     logGenerateFile(pathFileName);
   }
   // 创建index.ts
   fs.writeFileSync(
     routeFileName,
-    prettier.format(getRouteIndexPage(), {
+    prettier.format(getRouteIndexPage(routeFileName), {
+      parser: "babel-ts",
       singleQuote: true,
       semi: false,
       printWidth: 130,
     })
   );
   logGenerateFile(routeFileName);
+  addIndexImport(routePath);
   afterGenerate();
 }
