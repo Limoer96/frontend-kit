@@ -9,6 +9,8 @@ import {
   logGenerateFile,
 } from "./utils";
 
+import paths from "./path";
+
 function getComponentString(componentName: string) {
   return `/* eslint-disable @typescript-eslint/no-empty-interface */
 import React from 'react'
@@ -63,13 +65,7 @@ export default { ${pageModuleList.join(", ")} }
 }
 
 // 路由配置Dir是否存在
-function isModuleRoutePathExist() {
-  const config: IConfig = (global as any).MODULE_CONFIG;
-  const routePath = config.routePath || "./src/router/config";
-  const basePath = path.resolve(process.cwd(), routePath);
-  const modulePath = path.join(basePath, config.name);
-  return fs.existsSync(modulePath);
-}
+const isModuleRoutePathExist = () => fs.existsSync(paths.routeModulePath);
 
 function checkPageExistAndGenerate(currentPagePath: string, page: string) {
   const { name }: IConfig = (global as any).MODULE_CONFIG;
@@ -102,36 +98,30 @@ function checkPageExistAndGenerate(currentPagePath: string, page: string) {
 }
 
 export default function generatePage() {
-  const {
-    pages,
-    pagePath: pageDirPath,
-    name,
-  }: IConfig = (global as any).MODULE_CONFIG;
-  const pagePath = pageDirPath || "./src/pages";
-  const basePath = path.resolve(process.cwd(), pagePath); // 基本目录的绝对路径
-  const modulePath = path.join(basePath, name); // 模块目录路径
-  const afterGenerate = beforeGenerate(basePath, "page");
+  const { pages }: IConfig = (global as any).MODULE_CONFIG;
+  const { pagePath, pageModulePath } = paths;
+  const afterGenerate = beforeGenerate(pagePath, "page");
   if (!afterGenerate) {
     return;
   }
   // 只创建index.ts
   if (!pages || pages.length === 0) {
     const content = "export default {}";
-    fsp.writeFile(path.join(modulePath, "index.ts"), content).then(() => {
-      logGenerateFile(path.join(modulePath, "index.ts"));
+    fsp.writeFile(path.join(pageModulePath, "index.ts"), content).then(() => {
+      logGenerateFile(path.join(pageModulePath, "index.ts"));
     });
   } else {
     // 创建具体页面
     for (const page of pages) {
-      const currentPagePath = path.join(modulePath, page); // 创建具体的页面目录
+      const currentPagePath = path.join(pageModulePath, page); // 创建具体的页面目录
       checkPageExistAndGenerate(currentPagePath, page);
     }
     // 统一导出，无论是新生成还是增量
     fs.writeFileSync(
-      path.join(modulePath, "index.ts"),
+      path.join(pageModulePath, "index.ts"),
       getModuleIndexPage(pages)
     );
-    logGenerateFile(path.join(modulePath, "index.ts"));
+    logGenerateFile(path.join(pageModulePath, "index.ts"));
   }
   afterGenerate();
 }

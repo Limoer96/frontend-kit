@@ -1,4 +1,3 @@
-import path from "path";
 import fs from "fs";
 import chalk from "chalk";
 import prettier from "prettier";
@@ -10,6 +9,8 @@ import {
   logGenerateFile,
   logModifyFile,
 } from "./utils";
+
+import paths from "./path";
 
 function moduleHasPages() {
   const { pages, name }: IConfig = (global as any).MODULE_CONFIG;
@@ -57,8 +58,7 @@ function getRouteList(pages: string[]) {
   component: ${pageModuleName}.${componentName},
   title: '${page}',
   exact: true
-},
-`;
+},`;
   });
   return routeList;
 }
@@ -107,8 +107,7 @@ export default route
 }
 // 路由配置 模块自动导出
 // 纯字符串的操作方式，可能会存在问题
-function addIndexImport(routePath: string) {
-  const indexFilePath = path.join(routePath, "index.ts");
+function addIndexImport(indexFilePath: string) {
   const { name }: IConfig = (global as any).MODULE_CONFIG;
   const importModuleName = getPascalCaseName(name);
   let newIndexFileStr = `import ${importModuleName} from './${name}'\n`;
@@ -132,37 +131,43 @@ function addIndexImport(routePath: string) {
 // 思考：如果知道当前新增的page route?
 
 export default function generateRoutes() {
-  const config: IConfig = (global as any).MODULE_CONFIG;
-  const routePath = config.routePath || "./src/router/config"; // config dir
-  const basePath = path.resolve(process.cwd(), routePath); // absolute path at config
-  const modulePath = path.join(basePath, config.name); // module absolute path
-  const routeFileName = path.join(modulePath, "index.ts");
-  const pathFileName = path.join(modulePath, "path.ts");
-  // // 如果是增量式，直接结束
-  // if (warnIfModelGenerated(modulePath)) {
-  //   return;
-  // }
-
-  const afterGenerate = beforeGenerate(basePath, "route");
+  const {
+    routeConfigPath,
+    routeModulePathFileName,
+    routeModuleConfigFileName,
+    routeConfigIndexPath,
+  } = paths;
+  const extraPageNameList: string[] | undefined = (global as any)
+    .extraPageNameList;
+  const isAppend = extraPageNameList && extraPageNameList.length > 0;
+  const afterGenerate = beforeGenerate(routeConfigPath, "route");
   if (!afterGenerate) {
     return;
   }
   // 创建path.ts
   if (moduleHasPages()) {
-    fs.writeFileSync(pathFileName, getRoutePaths(pathFileName));
-    logGenerateFile(pathFileName);
+    fs.writeFileSync(
+      routeModulePathFileName,
+      getRoutePaths(routeModulePathFileName)
+    );
+
+    isAppend
+      ? logModifyFile(routeModulePathFileName)
+      : logGenerateFile(routeModulePathFileName);
   }
   // 创建index.ts
   fs.writeFileSync(
-    routeFileName,
-    prettier.format(getRouteIndexPage(routeFileName), {
+    routeModuleConfigFileName,
+    prettier.format(getRouteIndexPage(routeModuleConfigFileName), {
       parser: "babel-ts",
       singleQuote: true,
       semi: false,
       printWidth: 130,
     })
   );
-  logGenerateFile(routeFileName);
-  addIndexImport(routePath);
+  isAppend
+    ? logModifyFile(routeModuleConfigFileName)
+    : logGenerateFile(routeModuleConfigFileName);
+  addIndexImport(routeConfigIndexPath);
   afterGenerate();
 }
