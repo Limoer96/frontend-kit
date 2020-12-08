@@ -4,13 +4,15 @@ import { checkAndGenerateConfig } from "./checkAndGenerateConfig";
 import { CONFIG_PATH } from "./const";
 import { IConfig } from "./typing";
 import { getNodejsMainVersion } from "./utils";
-import generatePage from "./generatePage";
-import generateRoutes from "./generateRoute";
+// import generatePage from "./generatePage";
+// import generateRoutes from "./generateRoute";
 
 function run() {
   fsp.readFile(CONFIG_PATH, "utf-8").then((_config: string) => {
     const config: IConfig = JSON.parse(_config);
     (global as any).MODULE_CONFIG = config;
+    const generatePage = require("./generatePage").default;
+    const generateRoutes = require("./generateRoute").default;
     generatePage();
     generateRoutes();
   });
