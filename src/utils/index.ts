@@ -2,10 +2,7 @@
  * 非空数组join with ' '
  * @param arrays 待join的字符串数组
  */
-export function notEmptyArrayJoinWith(
-  spliter: string = '',
-  ...arrays: string[]
-) {
+export function notEmptyArrayJoinWith(spliter: string = '', ...arrays: string[]) {
   const blackList = [null, undefined, '']
   return arrays.filter((item) => !blackList.includes(item)).join(spliter)
 }
@@ -33,4 +30,8 @@ export function isEmptyValue(value, whiteKeys?: string[]) {
     }
   }
   return true
+}
+
+export function capitalizeFirstLetter(words: string) {
+  return words.slice(0, 1).toUpperCase() + words.slice(1)
 }
