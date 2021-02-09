@@ -25,6 +25,10 @@
     "scripts",
     "definitions"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Limoer96/frontend-kit"
+  },
   "author": "limoer",
   "license": "ISC",
   "dependencies": {
