@@ -113,6 +113,16 @@ export default importAll(require.context('./pages/', true, /.*model\.ts$/), fals
 export default importAll(require.context('./pages/', true, /.*model\.ts$/), true)
 ```
 
+4. `warning(content)`, `warningOnce(content)`开发模式下控制台警告
+
+```js
+import { warn } from 'wbd-frontend-kit
+warn.warning('warning there')
+warn.warningOnce('warning once')
+warn.resetWarned()
+warn.warningOnce('warning once')
+```
+
 其余工具函数见`es/utils`
 
 ### 脚本
