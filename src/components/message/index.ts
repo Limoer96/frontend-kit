@@ -1,5 +1,4 @@
 import React from 'react'
-import Cache, { CACHE_GLOBAL_KEY, CacheKeyMap } from './caches'
 import executeCallback from '../../utils/execFunction'
 import omit from '../../utils/omit'
 
@@ -17,43 +16,71 @@ interface ArgsProps {
 export interface MessageParams extends Partial<ArgsProps> {
   type: keyof CacheKeyMap
 }
+export interface CacheKeyMap {
+  success?: boolean
+  error?: boolean
+  info?: boolean
+  warning?: boolean
+  loading?: boolean
+}
+
+type CachesTypes = Record<keyof CacheKeyMap, boolean>
+
+const initCaches: CachesTypes = {
+  loading: false,
+  success: false,
+  error: false,
+  info: false,
+  warning: false,
+}
+
+let caches: CachesTypes = {
+  ...initCaches,
+}
+
+function resetMessageCache() {
+  caches = {
+    ...initCaches,
+  }
+}
 
 function messageApi(message: any) {
   const msgFunc = (function (message: any) {
-    if (window[CACHE_GLOBAL_KEY]) {
-      // 如果全局对象上已经存在同名的key，此API失效
-      return (params: MessageParams) => {
-        const type = params.type
-        message[type]({ ...omit(params, ['type']) })
-      }
-    }
-    const caches = new Cache()
     return (params: MessageParams) => {
       const type = params.type
-      if (!caches.getCache(type)) {
+      if (!caches[type]) {
         // 设置为占用状态
-        caches.setCache(type, true)
+        caches[type] = true
         message[type]({
           ...omit(params, ['type', 'onClose']),
           onClose: () => {
-            caches.setCache(type, false)
+            caches[type] = false
             executeCallback(params.onClose)
           },
         })
       }
     }
   })(message)
+  type MessageParamsWithContent = Partial<MessageParams> | string
+  function formatParams(params: MessageParamsWithContent, type: keyof CacheKeyMap): MessageParams {
+    if (typeof params === 'string') {
+      return {
+        content: params,
+        type,
+      }
+    }
+    return {
+      ...params,
+      type,
+    }
+  }
   const api = {
-    error: (params: Partial<MessageParams>) =>
-      msgFunc({ ...omit(params, ['type']), type: 'error' }),
-    info: (params: Partial<MessageParams>) =>
-      msgFunc({ ...omit(params, ['type']), type: 'info' }),
-    loading: (params: Partial<MessageParams>) =>
-      msgFunc({ ...omit(params, ['type']), type: 'loading' }),
-    success: (params: Partial<MessageParams>) =>
-      msgFunc({ ...omit(params, ['type']), type: 'success' }),
-    warning: (params: Partial<MessageParams>) =>
-      msgFunc({ ...omit(params, ['type']), type: 'warning' }),
+    error: (params: MessageParamsWithContent) => msgFunc(formatParams(params, 'error')),
+    info: (params: MessageParamsWithContent) => msgFunc(formatParams(params, 'info')),
+    loading: (params: MessageParamsWithContent) => msgFunc(formatParams(params, 'loading')),
+    success: (params: MessageParamsWithContent) => msgFunc(formatParams(params, 'success')),
+    warning: (params: MessageParamsWithContent) => msgFunc(formatParams(params, 'warning')),
+    reset: resetMessageCache,
   }
   return api
 }
