@@ -15,19 +15,26 @@ export const useQueryParam = (search: string, paramKey: string) => {
 }
 /**
  * 获取所有查询参数
- * @param location
+ * @param search search string
+ * @param keys selected keys
  */
-export const useQueryParams = (search: string) => {
+export const useQueryParams = <T = Dict>(search: string, keys?: string[]): T => {
   if (!search) {
-    return {}
+    return {} as T
   }
   const result = useMemo(() => {
     const params = new URLSearchParams(search)
-    const result: Dict = {}
+    const result = {} as T
     params.forEach((val, key) => {
-      result[key] = val
+      if (keys === undefined) {
+        result[key] = val
+      } else {
+        if (keys.includes(key)) {
+          result[key] = val
+        }
+      }
     })
     return result
-  }, [search])
+  }, [search, keys])
   return result
 }

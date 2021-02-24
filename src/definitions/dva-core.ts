@@ -1,12 +1,4 @@
-import {
-  Reducer,
-  Action,
-  AnyAction,
-  MiddlewareAPI,
-  StoreEnhancer,
-  Store,
-} from 'redux'
-import { History } from 'history'
+import { Reducer, Action, AnyAction, MiddlewareAPI, StoreEnhancer, Store } from 'redux'
 interface Dispatch<A extends Action = AnyAction> {
   <T extends A>(action: T): Promise<any> | T
 }
@@ -60,7 +52,7 @@ interface EffectsMapObject {
 }
 
 interface SubscriptionAPI {
-  history: History
+  history: any
   dispatch: Dispatch<any>
 }
 
@@ -77,7 +69,7 @@ export interface Model {
 }
 
 interface RouterAPI {
-  history: History
+  history: any
   app: DvaInstance
 }
 

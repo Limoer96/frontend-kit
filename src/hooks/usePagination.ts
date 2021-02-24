@@ -5,16 +5,14 @@ export interface IPagination {
   size: number
 }
 
-const defaultPageOptions: IPagination = {
+const DEFAULT_OPTIONS: IPagination = {
   page: 1,
   size: 10,
 }
 
-type returned = [IPagination, (pageOptions: IPagination) => void]
-
 export function useNoRenderPagination(
-  initPageOptions: IPagination = defaultPageOptions
-): returned {
+  initPageOptions: IPagination = DEFAULT_OPTIONS
+): [IPagination, (pageOptions: IPagination) => void] {
   const { current } = useRef(initPageOptions)
   function setPagination(pageOptions: IPagination) {
     current.page = pageOptions.page
@@ -26,17 +24,9 @@ export function useNoRenderPagination(
   return [pageOptions, setPagination]
 }
 
-type returnedv2 = [
-  number,
-  number,
-  (page: number, size: number) => void,
-  (current: number, size: number) => void,
-  () => void
-]
-
 export default function (
-  pageOption: IPagination = defaultPageOptions
-): returnedv2 {
+  pageOption: IPagination = DEFAULT_OPTIONS
+): [number, number, (page: number, size: number) => void, (current: number, size: number) => void, () => void] {
   const [page, setPage] = useState(pageOption.page)
   const [size, setSize] = useState(pageOption.size)
   function handleChange(page: number, pageSize: number) {
