@@ -1,4 +1,9 @@
-import { Dict } from "../definitions";
+import { Dict } from '../definitions'
+
+interface IUrlParams {
+  key: string
+  value: any
+}
 
 /**
  * 导出 流方式
@@ -9,35 +14,33 @@ import { Dict } from "../definitions";
  *  exportFile('/api/admin/platform/downloadReceiptProfitTemplate.xls', sendData)
  */
 export const exportFile = (url: string, params: Dict, removeTime = 4000) => {
-  const urlParams: any[] = [];
-  for (const p of Object.keys(params)) {
-    const key = p;
-    const value = params[p];
-    if (value != undefined && value !== "") {
+  const urlParams: IUrlParams[] = []
+  for (const key of Object.keys(params)) {
+    const value = params[key]
+    if (value != undefined && value !== '') {
       urlParams.push({
         key,
         value,
-      });
+      })
     }
   }
-  // urlParams.push({ key: 'Authorization', value: (config.authKey) })
-  const exportForm = document.createElement("form");
-  exportForm.method = "get";
-  exportForm.action = url;
-  exportForm.style.display = "none";
+  const exportForm = document.createElement('form')
+  exportForm.method = 'get'
+  exportForm.action = url
+  exportForm.style.display = 'none'
   urlParams.forEach((v) => {
-    const input = document.createElement("input");
-    input.type = "text";
-    input.name = v.key;
-    input.value = v.value;
-    exportForm.appendChild(input);
-  });
+    const input = document.createElement('input')
+    input.type = 'text'
+    input.name = v.key
+    input.value = v.value
+    exportForm.appendChild(input)
+  })
 
-  document.body.appendChild(exportForm);
+  document.body.appendChild(exportForm)
 
-  exportForm.submit();
+  exportForm.submit()
 
   setTimeout(() => {
-    document.body.removeChild(exportForm);
-  }, removeTime);
-};
+    document.body.removeChild(exportForm)
+  }, removeTime)
+}

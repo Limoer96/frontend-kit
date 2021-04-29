@@ -1,4 +1,4 @@
-export default function (func: any, ...params) {
+export default function <T = any>(func: (...params: T[]) => any, ...params: T[]) {
   if (typeof func === 'function') {
     return func(...params)
   }

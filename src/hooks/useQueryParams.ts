@@ -26,7 +26,7 @@ export const useQueryParams = <T = Dict>(search: string, keys?: string[]): T => 
     const params = new URLSearchParams(search)
     const result = {} as T
     params.forEach((val, key) => {
-      if (keys === undefined) {
+      if (typeof keys === 'undefined') {
         result[key] = val
       } else {
         if (keys.includes(key)) {
