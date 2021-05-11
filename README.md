@@ -22,26 +22,6 @@ singletonMessage.reset()
 singletonMessage.error('error happend!')
 ```
 
-### Definitions
-
-1. dva-core 类型定义
-
-使用方式：
-
-```js
-import { Model } from 'wbd-frontend-kit'
-const model: Model = {
-  namespace,
-  state,
-  effects: {
-    *xx(_, { call, put }) {
-      yield call(xxx)
-    },
-  },
-  reducers: {},
-}
-```
-
 ### Hooks
 
 1. usePagination 用于分页
