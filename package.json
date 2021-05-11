@@ -49,8 +49,6 @@
   },
   "peerDependencies": {
     "@types/react": "^16.9.49",
-    "@types/redux": "^3.6.0",
-    "react": "^16.13.1",
-    "redux": "^4.0.5"
+    "react": "^16.13.1"
   }
 }
